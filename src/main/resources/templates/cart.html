@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart Items</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      line-height: 1.6;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: #16b9ef !important;
+    }
+    .quantity-input {
+      width: 60px;
+    }
+    .subtotal, #totalPrice {
+      font-weight: bold;
+    }
+    #emptyCartMsg {
+      font-size: 1.2rem;
+      color: #dc3545;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .cart-actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container-fluid d-flex align-items-center">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarQuickMart"
+        aria-controls="navbarQuickMart" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand mb-0" th:href="@{/home}">
+        <i class="fa fa-shopping-cart" aria-hidden="true"></i> Quick Mart
+      </a>
+      <div class="collapse navbar-collapse" id="navbarQuickMart">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <div th:if="${user != null}">
+			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+			            <li class="nav-item"><a class="nav-link" th:href="@{/home}">Home</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/about}">About</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/cart}">Cart</a></li>
+						<li class="nav-item"><a class="nav-link" th:href="@{/userorders}">My Orders</a></li>
+
+			            <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/userprofile}">Profile</a></li>
+			          </ul>
+        </div>
+        <div th:if="${user == null}">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" th:href="@{/login}">Login</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/register}">Register</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <div class="container my-5" th:if="${user != null}">
+    <h2 class="mb-4">Your Cart</h2>
+    <div th:if="${#lists.isEmpty(cartItems)}">
+      <div id="emptyCartMsg">
+        <p>Your cart is empty.</p>
+      </div>
+      <div class="cart-actions" id="checkoutDiv">
+        <a id="checkoutBtn" class="btn btn-success btn-lg me-2 disabled" href="#" tabindex="-1" aria-disabled="true">
+          <i class="bi bi-credit-card"></i> Proceed to Checkout
+        </a>
+        <a href="/home" class="btn btn-info btn-sm align-self-center">
+          <i class="bi bi-cart-plus"></i> More Items
+        </a>
+      </div>
+    </div>
+    <div th:if="${!#lists.isEmpty(cartItems)}">
+      <table id="cartTable" class="table table-bordered table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Product</th>
+            <th>Description</th>
+            <th>Price (₹)</th>
+            <th>Quantity</th>
+            <th>Subtotal (₹)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="item,iter : ${cartItems}">
+            <td th:text="${item.product.name}">Product Name</td>
+            <td th:text="${item.product.description}">Description</td>
+            <td th:text="${item.product.price}">0.00</td>
+            <td>
+              <div class="input-group input-group-sm">
+                <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(this, -1)">−</button>
+                <input type="number" class="form-control text-center quantity-input" min="1"
+                       th:value="${item.cart.quantity}" th:data-cart-id="${item.cart.cartId}" th:data-price="${item.product.price}" onchange="recalculateTotal(this)">
+                <button class="btn btn-outline-secondary" type="button" onclick="updateQuantity(this, 1)">+</button>
+              </div>
+            </td>
+            <td class="subtotal" th:text="${item.product.price * item.cart.quantity}">0.00</td>
+            <td>
+              <button class="btn btn-danger btn-sm remove-btn"
+                      onclick="deleteCartItem(this)"
+                      th:attr="data-cart-id=${item.cart.cartId}">
+                <i class="bi bi-trash"></i> Remove
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" class="text-end"><strong>Total:</strong></td>
+            <td id="totalPrice">0.00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="cart-actions" id="checkoutDiv">
+        <a id="checkoutBtn" class="btn btn-success btn-lg me-2" th:href="@{/checkout}">
+          <i class="bi bi-credit-card"></i> Proceed to Checkout
+        </a>
+        <a href="/home" class="btn btn-info btn-sm align-self-center">
+          <i class="bi bi-cart-plus"></i> More Items
+        </a>
+      </div>
+    </div>
+  </div>
+  <div th:if="${user == null}">
+    <div class="container my-5 text-center">
+      <h2>Welcome to QUICK MART</h2>
+      <h3>Please LOGIN OR REGISTER</h3>
+    </div>
+  </div>
+  <footer class="bg-light py-4 mt-5">
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2025 Quick Mart. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    // Update subtotal and total
+    function recalculateTotal(input) {
+      var $row = $(input).closest('tr');
+      var qty = parseInt($(input).val());
+      var price = parseFloat($(input).data('price'));
+      var subtotal = qty * price;
+      $row.find('.subtotal').text(subtotal.toFixed(2));
+      updateTotal();
+    }
+ 
+    function updateTotal() {
+      var total = 0;
+      $('.subtotal').each(function() {
+        total += parseFloat($(this).text());
+      });
+      $('#totalPrice').text(total.toFixed(2));
+    }
+ 
+    function updateQuantity(button, change) {
+      var $input = $(button).siblings('input.quantity-input');
+      var qty = parseInt($input.val()) + change;
+      if (qty < 1) qty = 1;
+      $input.val(qty);
+      recalculateTotal($input);
+ 
+      // AJAX call to update quantity in backend
+      var cartId = $input.data('cart-id');
+      $.ajax({
+        url: '/cart/updateQuantity',
+        type: 'POST',
+        data: { cartId: cartId, quantity: qty },
+        success: function(response) {
+          // Optionally show a success message
+        }
+      });
+    }
+ 
+    $('.quantity-input').on('change', function() {
+      var qty = parseInt($(this).val());
+      if (qty < 1) {
+        $(this).val(1);
+        qty = 1;
+      }
+      recalculateTotal(this);
+ 
+      // AJAX call to update quantity in backend
+      var cartId = $(this).data('cart-id');
+      $.ajax({
+        url: '/cart/updateQuantity',
+        type: 'POST',
+        data: { cartId: cartId, quantity: qty },
+        success: function(response) {
+          // Optionally show a success message
+        }
+      });
+    });
+ 
+    function deleteCartItem(button) {
+      const cartId = $(button).data('cart-id');
+      $.ajax({
+        url: '/deleteCartItem',
+        type: 'POST',
+        data: { cartId: cartId },
+        success: function(response) {
+          // Remove the entire row containing the button
+          $(button).closest('tr').remove();
+          updateTotal();
+          // Check if cart is empty
+          if ($('#cartTable tbody tr').length === 0) {
+            $('#cartTable').hide();
+            $('#emptyCartMsg').show();
+            $('#checkoutDiv').show();
+            // Disable checkout button if cart is empty
+            $('#checkoutBtn').addClass('disabled').attr('href', '#').attr('tabindex', '-1').attr('aria-disabled', 'true');
+          }
+          alert('Item removed successfully');
+        },
+        error: function(xhr, status, error) {
+          alert('Failed to remove item');
+          console.error(error);
+        }
+      });
+    }
+ 
+    $(document).ready(function() {
+      updateTotal();
+      // Prevent checkout if cart is empty
+      $('#checkoutBtn').on('click', function(e) {
+        if ($('#cartTable tbody tr').length === 0 || $('#checkoutBtn').hasClass('disabled')) {
+          e.preventDefault();
+          alert('Your cart is empty. Please add items before checkout.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="ISO-8859-1">
+<title>Cart Items</title>
+<style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "Poppins", sans-serif;
+    }
+    .container {
+      max-width: 1300px;
+      margin: auto;
+      padding-left: 25px;
+      padding-right: 25px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #ff523b;
+    }
+    .Cart-Item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    .Cart-Item h3 {
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .Cart-Item img {
+      width: 100px;
+      margin-right: 20px;
+    }
+    .Cart-Item form {
+      display: flex;
+      align-items: center;
+    }
+    .Cart-Item input[type="number"] {
+      width: 50px;
+      height: 30px;
+      margin-right: 10px;
+      padding-left: 10px;
+      font-size: 20px;
+      border: 1px solid #ff523b;
+    }
+    .Cart-Item input[type="submit"] {
+      background: #ff523b;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+    .Cart-Item input[type="submit"]:hover {
+      background: #555;
+    }
+    .empty-cart {
+      text-align: center;
+      margin-top: 20px;
+      color: #ff523b;
+      font-size: 20px;
+    }
+    .proceed-to-pay {
+      display: block;
+      margin: 40px auto;
+      padding: 15px 30px;
+      background-color: #ff523b;
+      color: white;
+      text-align: center;
+      font-size: 18px;
+      border: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      border-radius: 5px;
+    }
+    .proceed-to-pay:hover {
+      background-color: #555;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cart Items</h1>
+ 
+        <!-- If cart exists and has items -->
+        <div th:if="${cart != null and #maps.size(cart.items) > 0}">
+            
+            <div th:each="cartItemEntry : ${cart.items}">
+                <div class="Cart-Item">
+                    <h3>Item ID: <span th:text="${cartItemEntry.value.itemId}"></span></h3>
+                    <h3>Item Name: <span th:text="${cartItemEntry.value.itemName}"></span></h3>
+                    <h3>Price: <span th:text="${cartItemEntry.value.price}"></span></h3>
+                    
+                    <form th:action="@{/cart}" method="post">
+                        <input type="hidden" name="itemId" th:value="${cartItemEntry.value.itemId}">
+                        Quantity: <input type="number" name="quantity" th:value="${cartItemEntry.value.quantity}" min="1">
+                        <input type="submit" name="action" value="update">
+                        <input type="submit" name="action" value="delete">
+                    </form>
+                    
+                    <h3>Subtotal: <span th:text="${cartItemEntry.value.subTotal}"></span></h3>
+                </div>
+            </div>
+ 
+            <a href="menu.html">Add more items</a>
+            <form th:action="@{/checkout}" method="get">
+                <center><input type="submit" value="Proceed To Pay" class="proceed-to-pay"></center>
+            </form>
+        </div>
+ 
+        <!-- If cart is empty -->
+        <div th:if="${cart == null or #maps.isEmpty(cart.items)}" class="empty-cart">
+            Your cart is empty.
+        </div>
+ 
+    </div>
+</body>
+</html>
+ 

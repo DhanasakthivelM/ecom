@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      line-height: 1.6;
+    }
+    footer {
+      background-color: #f8f9fa;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: #16b9ef !important;
+    }
+    @media (max-width: 992px) {
+      form.d-flex.mx-auto {
+        margin-top: 1rem;
+      }
+    }
+    .small-placeholder::placeholder {
+      font-size: 0.85rem;
+    }
+    form.d-flex.mx-auto .form-control {
+      margin-right: 0.25rem !important;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container-fluid d-flex align-items-center">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarQuickMart"
+        aria-controls="navbarQuickMart" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand mb-0" th:href="@{/home}">
+        <i class="fa fa-shopping-cart" aria-hidden="true"></i> Quick Mart
+      </a>
+      <div class="collapse navbar-collapse" id="navbarQuickMart">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <div th:if="${user != null}">
+			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+			            <li class="nav-item"><a class="nav-link" th:href="@{/home}">Home</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/about}">About</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/cart}">Cart</a></li>
+						<li class="nav-item"><a class="nav-link" th:href="@{/userorders}">My Orders</a></li>
+
+			            <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/userprofile}">Profile</a></li>
+			          </ul>
+        </div>
+        <div th:if="${user == null}">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" th:href="@{/login}">Login</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/register}">Register</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+ 
+  <div class="container my-5" th:if="${user != null}">
+    <h2 class="mb-4">Checkout</h2>
+    <form th:action="@{/placeOrder}" method="post" class="row g-3">
+      <div class="col-md-6">
+        <label for="name" class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+      </div>
+      <div class="col-md-6">
+        <label for="address" class="form-label">Address</label>
+        <input type="text" class="form-control" id="address" name="address" required>
+      </div>
+      <div class="col-md-6">
+        <label for="phone" class="form-label">Phone</label>
+        <input type="tel" class="form-control" id="phone" name="phone" required>
+      </div>
+      <!-- Only the payment section with error display -->
+<div class="col-md-6">
+  <label for="payment" class="form-label">Payment Method</label>
+  <select class="form-select" id="payment" name="payment" required onchange="showPaymentFields()">
+    <option value="">Choose...</option>
+    <option value="cod">Cash on Delivery</option>
+    <option value="card">Credit/Debit Card</option>
+    <option value="upi">UPI</option>
+  </select>
+</div>
+<!-- Credit/Debit Card Fields -->
+<div class="col-md-6" id="cardFields" style="display:none;">
+  <label for="cardNumber" class="form-label">Card Number</label>
+  <input type="text" class="form-control" id="cardNumber" name="cardNumber" maxlength="16">
+  <div id="cardNumberError" class="error-message"></div>
+  <label for="expiry" class="form-label mt-2">Expiry Date</label>
+  <input type="text" class="form-control" id="expiry" name="expiry" placeholder="MM/YY" maxlength="5">
+  <div id="expiryError" class="error-message"></div>
+  <label for="cvv" class="form-label mt-2">CVV</label>
+  <input type="password" class="form-control" id="cvv" name="cvv" maxlength="3">
+  <div id="cvvError" class="error-message"></div>
+</div>
+<!-- UPI Fields -->
+<div class="col-md-6" id="upiFields" style="display:none;">
+  <label for="upiId" class="form-label">UPI ID</label>
+  <input type="text" class="form-control" id="upiId" name="upiId" placeholder="yourupi@bank">
+  <div id="upiError" class="error-message"></div>
+</div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary" onclick="return validateForm()">Place Order</button>
+        </div>
+ 
+    </form>
+  </div>
+ 
+  <div th:if="${user == null}">
+    <div class="container my-5 text-center">
+      <h2>Welcome to QUICK MART</h2>
+      <h3>Please LOGIN OR REGISTER</h3>
+    </div>
+  </div>
+ 
+  <footer class="bg-light py-4 mt-5">
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2025 Quick Mart. All rights reserved.</p>
+    </div>
+  </footer>
+ 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <style>
+  .error-message {
+    color: #dc3545;
+    font-size: 0.95rem;
+  }
+  .input-error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
+  }
+</style>
+<script>
+function showPaymentFields() {
+  var payment = document.getElementById('payment').value;
+  document.getElementById('cardFields').style.display = payment === 'card' ? 'block' : 'none';
+  document.getElementById('upiFields').style.display = payment === 'upi' ? 'block' : 'none';
+}
+ 
+function validateForm() {
+  var payment = document.getElementById('payment').value;
+  var valid = true;
+ 
+  // Reset error messages and input borders
+  document.getElementById('cardNumberError').innerText = '';
+  document.getElementById('expiryError').innerText = '';
+  document.getElementById('cvvError').innerText = '';
+  document.getElementById('upiError').innerText = '';
+  document.getElementById('cardNumber').classList.remove('input-error');
+  document.getElementById('expiry').classList.remove('input-error');
+  document.getElementById('cvv').classList.remove('input-error');
+  document.getElementById('upiId').classList.remove('input-error');
+ 
+  if (payment === 'card') {
+    var cardNumber = document.getElementById('cardNumber').value.trim();
+    if (!/^\d{16}$/.test(cardNumber)) {
+      document.getElementById('cardNumberError').innerText = 'Enter a valid 16-digit card number.';
+      document.getElementById('cardNumber').classList.add('input-error');
+      valid = false;
+    }
+    var expiry = document.getElementById('expiry').value.trim();
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) {
+      document.getElementById('expiryError').innerText = 'Enter expiry in MM/YY format.';
+      document.getElementById('expiry').classList.add('input-error');
+      valid = false;
+    }
+    var cvv = document.getElementById('cvv').value.trim();
+    if (!/^\d{3}$/.test(cvv)) {
+      document.getElementById('cvvError').innerText = 'Enter a valid 3-digit CVV.';
+      document.getElementById('cvv').classList.add('input-error');
+      valid = false;
+    }
+  }
+ 
+  if (payment === 'upi') {
+    var upiId = document.getElementById('upiId').value.trim();
+    if (!/^[\w\.\-]{2,}@[a-zA-Z]{2,}$/.test(upiId)) {
+      document.getElementById('upiError').innerText = 'Enter a valid UPI ID (e.g., yourname@bank).';
+      document.getElementById('upiId').classList.add('input-error');
+      valid = false;
+    }
+  }
+ 
+  return valid;
+}
+</script>
+</body>
+</html>

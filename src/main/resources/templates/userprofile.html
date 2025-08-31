@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - Quick Mart</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      line-height: 1.6;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: #16b9ef !important;
+    }
+    .about-section {
+      background: #f8f9fa;
+      padding: 3rem 1rem;
+      border-radius: 10px;
+      margin-top: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .about-title {
+      color: #16b9ef;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .about-icon {
+      font-size: 2.5rem;
+      color: #16b9ef;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container-fluid d-flex align-items-center">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarQuickMart"
+        aria-controls="navbarQuickMart" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <a class="navbar-brand mb-0" th:href="@{/home}">
+        <i class="fa fa-shopping-cart" aria-hidden="true"></i> Quick Mart
+      </a>
+      <div class="collapse navbar-collapse" id="navbarQuickMart">
+        <!-- Search bar removed -->
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        <div th:if="${user != null}">
+			<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+			            <li class="nav-item"><a class="nav-link" th:href="@{/home}">Home</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/about}">About</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/cart}">Cart</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/logout}">Logout</a></li>
+			            <li class="nav-item"><a class="nav-link" th:href="@{/userprofile}">Profile</a></li>
+			          </ul>
+        </div>
+        <div th:if="${user == null}">
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item"><a class="nav-link" th:href="@{/login}">Login</a></li>
+            <li class="nav-item"><a class="nav-link" th:href="@{/register}">Register</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+  
+  <div th:if="${user != null}" class="container mt-5">
+         <div class="card p-4 shadow-sm mx-auto" style="max-width: 500px;">
+             <h1 class="card-title text-center mb-4">User Profile</h1>
+
+             <div th:if="${param.success}" class="alert alert-success text-center fade show" role="alert">
+                 Profile updated successfully! ✨
+             </div>
+             <div th:if="${passwordError}" class="alert alert-danger text-center fade show" role="alert" th:text="${passwordError}"></div>
+             <div th:if="${error}" class="alert alert-danger text-center fade show" role="alert" th:text="${error}"></div>
+             
+             <form th:action="@{/userprofile/update}" th:object="${user}" method="post">
+                 <input type="hidden" th:field="*{id}" />
+                 
+                 <h2 class="h5 mb-3">Your Details</h2>
+                 <div class="mb-3">
+                     <label for="username" class="form-label">Username</label>
+                     <input type="text" id="username" th:field="*{username}" class="form-control" required />
+                 </div>
+                 
+                 <div class="mb-3">
+                     <label for="email" class="form-label">Email</label>
+                     <input type="email" id="email" th:field="*{email}" class="form-control" required />
+                 </div>
+
+                 <div class="mb-3">
+                     <label for="role" class="form-label">Role</label>
+                     <input type="text" id="role" th:field="*{role}" class="form-control" readonly />
+                 </div>
+
+                 <hr>
+
+                 <h3 class="h5 mb-3">Change Password</h3>
+                 <div class="mb-3">
+                     <label for="currentPassword" class="form-label">Current Password</label>
+                     <input type="password" id="currentPassword" name="currentPassword" class="form-control" />
+                 </div>
+                 <div class="mb-3">
+                     <label for="newPassword">New Password</label>
+                     <input type="password" id="newPassword" name="newPassword" class="form-control" />
+                 </div>
+                 <div class="mb-3">
+                     <label for="confirmNewPassword">Confirm New Password</label>
+                     <input type="password" id="confirmNewPassword" name="confirmNewPassword" class="form-control" />
+                 </div>
+                 
+                 <div class="d-grid mt-4">
+                     <button type="submit" class="btn btn-primary btn-lg">Update Profile</button>
+                 </div>
+             </form>
+         </div>
+     </div>
+     
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+     <script>
+         document.addEventListener('DOMContentLoaded', function() {
+             // Find all elements with the 'alert' class
+             const alerts = document.querySelectorAll('.alert');
+
+             // Loop through each alert and set a timeout
+             alerts.forEach(function(alert) {
+                 setTimeout(function() {
+                     // Find the Bootstrap alert instance and close it
+                     const bsAlert = new bootstrap.Alert(alert);
+                     bsAlert.close();
+                 }, 2000); // 2000 milliseconds = 2 seconds
+             });
+         });
+     </script>
+  <footer class="bg-light py-4 mt-5">
+    <div class="container text-center">
+      <p class="mb-0">&copy; 2025 Quick Mart. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
